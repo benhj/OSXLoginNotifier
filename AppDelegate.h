@@ -15,8 +15,10 @@
     std::set<std::string> _users;
 }
 
+-(NSImage *)userImage:(NSString*)username;
 -(void)showNotification:(NSString*)title
-            withMessage:(NSString*)message;
+            withMessage:(NSString*)message
+            whereUserIs:(NSString*)user;
 -(NSString*)getLoggedOnUsers;
 - (void)checkForLoggedIn:(NSArray*) users;
 - (void)checkForLoggedOut:(NSArray*) users;

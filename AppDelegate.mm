@@ -7,15 +7,26 @@
 //
 
 #import "AppDelegate.h"
+#import <Collaboration/Collaboration.h>
 
 @implementation AppDelegate
 
+
+-(NSImage *)userImage:(NSString*)username
+{
+    CBIdentity *identity = [CBIdentity identityWithName:username authority:[CBIdentityAuthority defaultIdentityAuthority]];
+    return [identity image];
+}
+
 -(void)showNotification:(NSString*)title
-            withMessage:(NSString*)message {
+            withMessage:(NSString*)message
+            whereUserIs:(NSString*)user
+{
     NSUserNotification *notification = [[NSUserNotification alloc] init];
     notification.title               = title;
     notification.informativeText     = message;
     notification.soundName           = NSUserNotificationDefaultSoundName;
+    notification.contentImage        = [self userImage:user];
     [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
 }
 
@@ -39,17 +50,26 @@
 
 - (void)checkForLoggedIn:(NSArray*) users {
     for(NSString* user in users) {
-        std::string stdUser([user UTF8String]);
+        
+        NSString* strippedUser = user;
+        if ([self endsWithCharacter: L'\n'
+                          forString: strippedUser]) {
+            strippedUser = [user substringToIndex:[user length]-1];
+        }
+        
+        std::string stdUser([strippedUser UTF8String]);
         auto it = _users.find(stdUser);
         if(it == _users.end()) { // not found, so add
             _users.insert(stdUser);
             
             NSMutableString* message = [[NSMutableString alloc] init];
             [message appendString:@"User "];
-            [message appendString:user];
+            [message appendString:strippedUser];
             [message appendString:@" has logged in."];
             
-            [self showNotification:@"Logged in event" withMessage:message];
+            [self showNotification:@"Logged in event"
+                       withMessage:message
+                       whereUserIs:strippedUser];
         }
     }
 }
@@ -58,8 +78,13 @@
     // strip out those that no longer exist
     std::set<std::string> comparison;
     for(NSString* user in users) {
-        std::string stdUser([user UTF8String]);
-        NSLog(@"User: %@", user);
+        NSString* strippedUser = user;
+        if ([self endsWithCharacter: L'\n'
+                          forString: strippedUser]) {
+            strippedUser = [user substringToIndex:[user length]-1];
+        }
+        std::string stdUser([strippedUser UTF8String]);
+        NSLog(@"User: %@", strippedUser);
         comparison.insert(stdUser);
     }
     
@@ -75,7 +100,9 @@
             [message appendString:@"User "];
             [message appendString:nsUser];
             [message appendString:@" has logged off."];
-            [self showNotification:@"Logged out event" withMessage:message];
+            [self showNotification:@"Logged out event"
+                       withMessage:message
+                       whereUserIs:nsUser];
             itr = _users.erase(itr);
         } else {
             ++itr;
@@ -93,6 +120,13 @@
         [self checkForLoggedOut:users];
         sleep(5);
     }
+}
+
+- (BOOL) endsWithCharacter: (unichar) c
+                 forString: (NSString*)str
+{
+    NSUInteger length = [str length];
+    return (length > 0) && ([str characterAtIndex: length - 1] == c);
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
