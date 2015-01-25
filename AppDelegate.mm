@@ -12,16 +12,27 @@
 @implementation AppDelegate
 
 
+-(NSString *)fullName:(NSString*)username {
+    CBIdentity *identity = [CBIdentity identityWithName:username authority:[CBIdentityAuthority defaultIdentityAuthority]];
+    return identity.fullName;
+}
+
 -(NSImage *)userImage:(NSString*)username
 {
     CBIdentity *identity = [CBIdentity identityWithName:username authority:[CBIdentityAuthority defaultIdentityAuthority]];
     return [identity image];
 }
 
+- (BOOL) endsWithCharacter: (unichar) c
+                 forString: (NSString*)str
+{
+    NSUInteger length = [str length];
+    return (length > 0) && ([str characterAtIndex: length - 1] == c);
+}
+
 -(void)showNotification:(NSString*)title
             withMessage:(NSString*)message
-            whereUserIs:(NSString*)user
-{
+            whereUserIs:(NSString*)user {
     NSUserNotification *notification = [[NSUserNotification alloc] init];
     notification.title               = title;
     notification.informativeText     = message;
@@ -63,9 +74,11 @@
             _users.insert(stdUser);
             
             NSMutableString* message = [[NSMutableString alloc] init];
-            [message appendString:@"User "];
+            [message appendString:[self fullName:strippedUser]];
+            [message appendString:@" (username "];
             [message appendString:strippedUser];
-            [message appendString:@" has logged in."];
+            [message appendString:@")"];
+            [message appendString:@"\nhas logged in."];
             
             [self showNotification:@"Logged in event"
                        withMessage:message
@@ -84,7 +97,7 @@
             strippedUser = [user substringToIndex:[user length]-1];
         }
         std::string stdUser([strippedUser UTF8String]);
-        NSLog(@"User: %@", strippedUser);
+        //NSLog(@"User: %@", strippedUser);
         comparison.insert(stdUser);
     }
     
@@ -97,9 +110,11 @@
                                                   encoding:[NSString defaultCStringEncoding]];
             
             NSMutableString* message = [[NSMutableString alloc] init];
-            [message appendString:@"User "];
+            [message appendString:[self fullName:nsUser]];
+            [message appendString:@" (username "];
             [message appendString:nsUser];
-            [message appendString:@" has logged off."];
+            [message appendString:@")"];
+            [message appendString:@"\nhas logged off."];
             [self showNotification:@"Logged out event"
                        withMessage:message
                        whereUserIs:nsUser];
@@ -110,9 +125,9 @@
     }
 }
 
-- (void)checkForNewUser {
+- (void)checkUsers {
     
-    // Acquire list of logged on users
+    // Poll for user log-in / log-out event
     while(1) {
         NSString *loggedOnUsers = [self getLoggedOnUsers];
         NSArray *users = [loggedOnUsers componentsSeparatedByString: @" "];
@@ -122,16 +137,11 @@
     }
 }
 
-- (BOOL) endsWithCharacter: (unichar) c
-                 forString: (NSString*)str
-{
-    NSUInteger length = [str length];
-    return (length > 0) && ([str characterAtIndex: length - 1] == c);
-}
-
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     
-    [self performSelectorInBackground:@selector(checkForNewUser) withObject:nil];
+    // Continuously check for user stats; launches a loop that
+    // polls every 5 seconds
+    [self performSelectorInBackground:@selector(checkUsers) withObject:nil];
     
 }
 
