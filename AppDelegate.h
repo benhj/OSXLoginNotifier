@@ -46,5 +46,8 @@
 /// For setting email address
 - (void)processSetEmailAddress:(id)sender;
 
+/// For handling when desktop becomes active / inactive
+- (void)switchHandler:(NSNotification*) notification;
+
 @end
 

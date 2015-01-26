@@ -187,9 +187,22 @@
                     action:@selector(processExit:)
              keyEquivalent:@""];
     _statusItem.menu = menu;
+    
+    // listen to workspace activation / inactivation event
+    [[[NSWorkspace sharedWorkspace] notificationCenter]
+     addObserver:self
+     selector:@selector(switchHandler:)
+     name:NSWorkspaceSessionDidBecomeActiveNotification
+     object:nil];
+    
+    [[[NSWorkspace sharedWorkspace] notificationCenter]
+     addObserver:self
+     selector:@selector(switchHandler:)
+     name:NSWorkspaceSessionDidResignActiveNotification
+     object:nil];
+    
 
-    // Continuously check for user stats; launches a loop that
-    // polls every 5 seconds
+    // Continuously check for unix style logins / logouts
     [self performSelectorInBackground:@selector(checkUsers) withObject:nil];
     
 }
@@ -236,6 +249,32 @@
         return nil;
     } else {
         return nil;
+    }
+}
+
+- (void) switchHandler:(NSNotification*) notification
+{
+    if ([[notification name] isEqualToString:
+         NSWorkspaceSessionDidResignActiveNotification]) {
+        if(_emailAddress) {
+            Emailer *emailer = [[Emailer alloc] init];
+            NSMutableString* message = [[NSMutableString alloc] init];
+            [message appendString:@"Workspace became inactive for user "];
+            [message appendString:NSUserName()];
+            [emailer sendEmail:@"Workspace inactive notification"
+                   withMessage:message
+                     toAddress:_emailAddress];
+        }
+    } else {
+        if(_emailAddress) {
+            Emailer *emailer = [[Emailer alloc] init];
+            NSMutableString* message = [[NSMutableString alloc] init];
+            [message appendString:@"Workspace became active for user "];
+            [message appendString:NSUserName()];
+            [emailer sendEmail:@"Workspace active notification"
+                   withMessage:message
+                     toAddress:_emailAddress];
+        }
     }
 }
 
