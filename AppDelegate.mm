@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "Emailer.h"
 #import <Collaboration/Collaboration.h>
 
 @implementation AppDelegate
@@ -83,6 +84,14 @@
             [self showNotification:@"Logged in event"
                        withMessage:message
                        whereUserIs:strippedUser];
+            
+            // send email if email address has been set
+            if(_emailAddress) {
+                Emailer *emailer = [[Emailer alloc] init];
+                [emailer sendEmail:@"User logged in event"
+                       withMessage:message
+                         toAddress:_emailAddress];
+            }
         }
     }
 }
@@ -109,6 +118,8 @@
             NSString *nsUser = [NSString stringWithCString:(*itr).c_str()
                                                   encoding:[NSString defaultCStringEncoding]];
             
+            itr = _users.erase(itr);
+            
             NSMutableString* message = [[NSMutableString alloc] init];
             [message appendString:[self fullName:nsUser]];
             [message appendString:@" (username "];
@@ -118,7 +129,15 @@
             [self showNotification:@"Logged out event"
                        withMessage:message
                        whereUserIs:nsUser];
-            itr = _users.erase(itr);
+            
+            // send email if email address has been set
+            if(_emailAddress) {
+                Emailer *emailer = [[Emailer alloc] init];
+                [emailer sendEmail:@"User logged out event"
+                       withMessage:message
+                         toAddress:_emailAddress];
+            }
+            
         } else {
             ++itr;
         }
@@ -139,14 +158,85 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     
+    // Set up the icon that is displayed in the status bar
+    _statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    _statusItem.title = @"";
+    _statusItem.toolTip = @"OSXLoginNotifier";
+    _statusItem.image = [NSImage imageNamed:@"statusItemImage"];
+    _statusItem.alternateImage = [NSImage imageNamed:@"statusItemImage"];
+    _statusItem.highlightMode = YES;
+    
+    // Menu stuff
+    NSMenu *menu = [[NSMenu alloc] init];
+    
+    // For popping up a dialog of where user want email notifications
+    // to be delivered
+    [menu addItemWithTitle:@"Email notifications to.."
+                    action:@selector(processSetEmailAddress:)
+             keyEquivalent:@""];
+    [menu addItem:[NSMenuItem separatorItem]]; // A thin grey line
+    
+    // Add a simple 'about' item
+    [menu addItemWithTitle:@"About"
+                    action:@selector(orderFrontStandardAboutPanel:)
+             keyEquivalent:@""];
+    [menu addItem:[NSMenuItem separatorItem]]; // A thin grey line
+    
+    // Add an exit item to exit program
+    [menu addItemWithTitle:@"Exit"
+                    action:@selector(processExit:)
+             keyEquivalent:@""];
+    _statusItem.menu = menu;
+
     // Continuously check for user stats; launches a loop that
     // polls every 5 seconds
     [self performSelectorInBackground:@selector(checkUsers) withObject:nil];
     
 }
 
+- (void)processExit:(id)sender {
+    [NSApp terminate: nil];
+}
+
+- (void)processSetEmailAddress:(id)sender {
+    _emailAddress = [self input:@"Enter email address"
+                   defaultValue:@"username@domain.com"];
+    
+    if(_emailAddress) {
+        // send a test email
+        Emailer *emailer = [[Emailer alloc] init];
+        [emailer sendEmail:@"Email registration"
+               withMessage:@"You have registered this email address to receive notifications"
+                 toAddress:_emailAddress];
+    }
+}
+
+
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     // Insert code here to tear down your application
+    // TODO
+}
+
+- (NSString *)input: (NSString *)prompt
+       defaultValue: (NSString *)defaultValue {
+    NSAlert *alert = [NSAlert alertWithMessageText: prompt
+                                     defaultButton:@"OK"
+                                   alternateButton:@"Cancel"
+                                       otherButton:nil
+                         informativeTextWithFormat:@""];
+    
+    NSTextField *input = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 200, 24)];
+    [input setStringValue:defaultValue];
+    [alert setAccessoryView:input];
+    NSInteger button = [alert runModal];
+    if (button == NSAlertDefaultReturn) {
+        [input validateEditing];
+        return [input stringValue];
+    } else if (button == NSAlertAlternateReturn) {
+        return nil;
+    } else {
+        return nil;
+    }
 }
 
 @end

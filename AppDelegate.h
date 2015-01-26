@@ -13,6 +13,8 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
     std::set<std::string> _users;
+    NSStatusItem *_statusItem;
+    NSString *_emailAddress;
 }
 
 /// Get a user's full name
@@ -37,6 +39,12 @@
 
 /// Check for logged in and logged out users 
 - (void)checkUsers;
+
+/// When user selects exit in status menu
+- (void)processExit:(id)sender;
+
+/// For setting email address
+- (void)processSetEmailAddress:(id)sender;
 
 @end
 
