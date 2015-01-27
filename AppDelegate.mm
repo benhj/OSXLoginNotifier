@@ -213,7 +213,7 @@
 
 - (void)processSetEmailAddress:(id)sender {
     _emailAddress = [self input:@"Enter email address"
-                   defaultValue:@"username@domain.com"];
+                   defaultValue:(_emailAddress ? _emailAddress : @"username@domain.com") ];
     
     if(_emailAddress) {
         // send a test email
@@ -246,7 +246,7 @@
         [input validateEditing];
         return [input stringValue];
     } else if (button == NSAlertAlternateReturn) {
-        return nil;
+        return _emailAddress ? _emailAddress : nil;
     } else {
         return nil;
     }
