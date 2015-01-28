@@ -49,5 +49,8 @@
 /// For handling when desktop becomes active / inactive
 - (void)switchHandler:(NSNotification*) notification;
 
+/// Brings and about dialog to front
+- (void)frontAbout:(id)sender;
+
 @end
 
