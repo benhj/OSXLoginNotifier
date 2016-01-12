@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface Emailer : NSSharingService
+@interface Emailer : NSObject 
 
 -(void)sendEmail:(NSString*)subject
      withMessage:(NSString*)message

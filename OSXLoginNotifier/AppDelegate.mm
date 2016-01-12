@@ -92,6 +92,9 @@
                        withMessage:message
                          toAddress:_emailAddress];
             }
+            
+            // log to file if file
+            [self writeLog:strippedUser withStatus:@"in"];
         }
     }
 }
@@ -138,6 +141,9 @@
                          toAddress:_emailAddress];
             }
             
+            // log to file if file
+            [self writeLog:nsUser withStatus:@"out"];
+            
         } else {
             ++itr;
         }
@@ -174,6 +180,12 @@
     [menu addItemWithTitle:@"Email notifications to.."
                     action:@selector(processSetEmailAddress:)
              keyEquivalent:@""];
+    
+    // For logging of activity to a file
+    [menu addItemWithTitle:@"Log activity to.."
+                    action:@selector(processLogTo:)
+             keyEquivalent:@""];
+    
     [menu addItem:[NSMenuItem separatorItem]]; // A thin grey line
     
     // Add a simple 'about' item
@@ -224,6 +236,14 @@
     }
 }
 
+- (void)processLogTo:(id)sender {
+    _fileString = [self input:@"Enter full file path"
+                 defaultValue:(_fileString ? _fileString : @"~/loginActivity.log")];
+    if(_fileString) {
+        [[NSFileManager defaultManager] createFileAtPath:_fileString contents:nil attributes:nil];
+    }
+}
+
 -(void)frontAbout:(id)sender{
     
     [NSApp activateIgnoringOtherApps:YES];
@@ -236,22 +256,43 @@
     // TODO
 }
 
+- (void)writeLog: (NSString*)user
+      withStatus: (NSString*)status {
+    if(_fileString) {
+        // get current date and time
+        NSDate * now = [NSDate date];
+        NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
+        [outputFormatter setDateFormat:@"yyyy-MM-dd hh:mm:ss"];
+        NSString *newDateString = [outputFormatter stringFromDate:now];
+        NSMutableString *str = [[NSMutableString alloc] init];
+        [str appendString:user];
+        [str appendString:@" "];
+        [str appendString:status];
+        [str appendString:@" "];
+        [str appendString:newDateString];
+        [str appendString:@"\n"];
+        NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:_fileString];
+        [fileHandle seekToEndOfFile];
+        [fileHandle writeData:[str dataUsingEncoding:NSUTF8StringEncoding]];
+        [fileHandle closeFile];
+    }
+}
+
 - (NSString *)input: (NSString *)prompt
        defaultValue: (NSString *)defaultValue {
-    NSAlert *alert = [NSAlert alertWithMessageText: prompt
-                                     defaultButton:@"OK"
-                                   alternateButton:@"Cancel"
-                                       otherButton:nil
-                         informativeTextWithFormat:@""];
+    NSAlert *alert = [[NSAlert alloc] init];
+    [alert setMessageText:prompt];
+    [alert addButtonWithTitle:@"Ok"];
+    [alert addButtonWithTitle:@"Cancel"];
     
     NSTextField *input = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 200, 24)];
     [input setStringValue:defaultValue];
     [alert setAccessoryView:input];
     NSInteger button = [alert runModal];
-    if (button == NSAlertDefaultReturn) {
+    if (button == NSAlertFirstButtonReturn) {
         [input validateEditing];
         return [input stringValue];
-    } else if (button == NSAlertAlternateReturn) {
+    } else if (button == NSAlertSecondButtonReturn) {
         return _emailAddress ? _emailAddress : nil;
     } else {
         return nil;
@@ -271,6 +312,8 @@
                    withMessage:message
                      toAddress:_emailAddress];
         }
+        // log to file if file
+        [self writeLog:NSUserName() withStatus:@"I"];
     } else {
         if(_emailAddress) {
             Emailer *emailer = [[Emailer alloc] init];
@@ -281,6 +324,8 @@
                    withMessage:message
                      toAddress:_emailAddress];
         }
+        // log to file if file
+        [self writeLog:NSUserName() withStatus:@"A"];
     }
 }
 

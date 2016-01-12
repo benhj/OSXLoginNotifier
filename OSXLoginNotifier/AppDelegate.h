@@ -15,6 +15,7 @@
     std::set<std::string> _users;
     NSStatusItem *_statusItem;
     NSString *_emailAddress;
+    NSString *_fileString;
 }
 
 /// Get a user's full name
@@ -45,6 +46,9 @@
 
 /// For setting email address
 - (void)processSetEmailAddress:(id)sender;
+
+/// For setting a file to log activity to
+- (void)processLogTo:(id)sender;
 
 /// For handling when desktop becomes active / inactive
 - (void)switchHandler:(NSNotification*) notification;
