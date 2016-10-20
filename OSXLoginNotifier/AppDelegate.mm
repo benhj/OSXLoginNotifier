@@ -166,11 +166,11 @@
     
     // Set up the icon that is displayed in the status bar
     _statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    _statusItem.title = @"";
-    _statusItem.toolTip = @"OSXLoginNotifier";
-    _statusItem.image = [NSImage imageNamed:@"statusItemImage"];
-    _statusItem.alternateImage = [NSImage imageNamed:@"statusItemImage"];
-    _statusItem.highlightMode = YES;
+    _statusItem.button.title = @"";
+    _statusItem.button.toolTip = @"OSXLoginNotifier";
+    NSImage* img = [NSImage imageNamed:@"statusBarIcon"];
+    [img setTemplate:YES];
+    _statusItem.button.image = img;
     
     // Menu stuff
     NSMenu *menu = [[NSMenu alloc] init];

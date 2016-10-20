@@ -405,7 +405,6 @@
 		FA5DF9361C450355008A1F76 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = OSXLoginNotifier/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -417,7 +416,6 @@
 		FA5DF9371C450355008A1F76 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = OSXLoginNotifier/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -497,6 +495,7 @@
 				FA5DF9371C450355008A1F76 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		FA5DF9381C450355008A1F76 /* Build configuration list for PBXNativeTarget "OSXLoginNotifierTests" */ = {
 			isa = XCConfigurationList;
@@ -505,6 +504,7 @@
 				FA5DF93A1C450355008A1F76 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		FA5DF93B1C450355008A1F76 /* Build configuration list for PBXNativeTarget "OSXLoginNotifierUITests" */ = {
 			isa = XCConfigurationList;
@@ -513,6 +513,7 @@
 				FA5DF93D1C450355008A1F76 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
